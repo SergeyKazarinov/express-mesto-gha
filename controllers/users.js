@@ -8,13 +8,9 @@ module.exports.getUsers = (req, res) => {
 };
 
 module.exports.getUserById = (req, res) => {
-  if(!Users[req.param.id]) {
-    res.send('Такого пользователя не существуует');
-    return;
-  }
-
-  const user = Users[req.param.id];
-  res.send(user);
+  Users.findById(req.params.id)
+  .then(user => res.send(user))
+  .catch(() => res.status(500).send({message: 'Произошла ошибка'}));
 };
 
 module.exports.createUser = (req, res) => {
