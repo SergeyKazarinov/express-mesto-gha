@@ -14,7 +14,7 @@ module.exports.getCards = (req, res) => {
         message = validationError.message;
         break;
       }
-      res.status(status).send(message);
+      res.status(status).send({message});
     });
 };
 
@@ -33,7 +33,7 @@ module.exports.createCard = (req, res) => {
         message = validationError.message;
         break;
       }
-      res.status(status).send(message);
+      res.status(status).send({message});
     });
 };
 
@@ -50,7 +50,7 @@ module.exports.deleteCard = (req, res) => {
         message = notFoundError.message;
         break;
       }
-      res.status(status).send(message);
+      res.status(status).send({message});
     });
 };
 
@@ -71,7 +71,7 @@ module.exports.likeCard  = (req, res) => {
         message = notFoundError.message;
         break;
       }
-      res.status(status).send(message);
+      res.status(status).send({message});
     });
 };
 
@@ -92,6 +92,6 @@ module.exports.dislikeCard  = (req, res) => {
         message = notFoundError.message;
         break;
       }
-      res.status(status).send(message);
+      res.status(status).send({message});
     });
 };

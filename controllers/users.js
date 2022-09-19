@@ -31,7 +31,7 @@ module.exports.getUserById = (req, res) => {
       message = notFoundError.message;
       break;
     }
-    res.status(status).send(message);
+    res.status(status).send({message});
   });
 };
 
@@ -49,7 +49,7 @@ module.exports.createUser = (req, res) => {
         message = validationError.message;
         break;
       }
-      res.status(status).send(message);
+      res.status(status).send({message});
     });
 };
 
@@ -78,7 +78,7 @@ module.exports.updateUser = (req, res) => {
       message = notFoundError.message;
       break;
     }
-    res.status(status).send(message);
+    res.status(status).send({message});
   });
 };
 
@@ -108,6 +108,6 @@ module.exports.updateAvatarUser = (req, res) => {
       message = notFoundError.message;
       break;
     }
-    res.status(status).send(message);
+    res.status(status).send({message});
   });
 };
