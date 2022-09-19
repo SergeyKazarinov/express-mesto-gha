@@ -54,8 +54,10 @@ module.exports.createUser = (req, res) => {
 };
 
 module.exports.updateUser = (req, res) => {
+  if(!(req.body.name && req.body.about)) {
+    throw res.status(400).send('Переданы некорректные данные при обновлении профиля');
+  }
   const {name, about} = req.body;
-  const validationError = new ValidationErrors('Переданы некорректные данные при обновлении профиля.');
   const notFoundError = new NotFoundError('Пользователь с указанным _id не найден.');
   Users.findByIdAndUpdate(
     req.user._id,
@@ -75,18 +77,16 @@ module.exports.updateUser = (req, res) => {
       status = notFoundError.statusCode;
       message = notFoundError.message;
       break;
-    case validationError.name:
-      status = validationError.statusCode;
-      message = validationError.message;
-      break;
     }
     res.status(status).send(message);
   });
 };
 
 module.exports.updateAvatarUser = (req, res) => {
+  if(!req.body.avatar) {
+    throw res.status(400).send('Переданы некорректные данные при обновлении аватара.');
+  }
   const { avatar } = req.body;
-  const validationError = new ValidationErrors('Переданы некорректные данные при обновлении аватара.');
   const notFoundError = new NotFoundError('Пользователь с указанным _id не найден.');
 
   Users.findByIdAndUpdate(
@@ -99,16 +99,13 @@ module.exports.updateAvatarUser = (req, res) => {
   ).orFail(notFoundError)
   .then(user => res.send(user))
   .catch((err) => {
+    console.dir(err);
     let status = 500;
     let message = 'Произошла ошибка';
     switch(err.name) {
     case notFoundError.name:
       status = notFoundError.statusCode;
       message = notFoundError.message;
-      break;
-    case validationError.name:
-      status = validationError.statusCode;
-      message = validationError.message;
       break;
     }
     res.status(status).send(message);

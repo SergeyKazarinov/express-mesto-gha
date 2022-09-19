@@ -55,21 +55,43 @@ module.exports.deleteCard = (req, res) => {
 };
 
 module.exports.likeCard  = (req, res) => {
+  const notFoundError = new NotFoundError('Карточка с указанным _id не найдена.');
   Cards.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
     { new: true },
     )
     .then(cards => res.send(cards))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      let status = 500;
+      let message = 'Произошла ошибка';
+      switch(err.name) {
+      case notFoundError.name:
+        status = notFoundError.statusCode;
+        message = notFoundError.message;
+        break;
+      }
+      res.status(status).send(message);
+    });
 };
 
 module.exports.dislikeCard  = (req, res) => {
+  const notFoundError = new NotFoundError('Карточка с указанным _id не найдена.');
   Cards.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
     { new: true },
     )
     .then(cards => res.send(cards))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch((err) => {
+      let status = 500;
+      let message = 'Произошла ошибка';
+      switch(err.name) {
+      case notFoundError.name:
+        status = notFoundError.statusCode;
+        message = notFoundError.message;
+        break;
+      }
+      res.status(status).send(message);
+    });
 };
