@@ -55,7 +55,7 @@ module.exports.createUser = (req, res) => {
 
 module.exports.updateUser = (req, res) => {
   if(!(req.body.name && req.body.about)) {
-    throw res.status(400).send('Переданы некорректные данные при обновлении профиля');
+    throw res.status(400).send({message: 'Переданы некорректные данные при обновлении профиля'});
   }
   const {name, about} = req.body;
   const notFoundError = new NotFoundError('Пользователь с указанным _id не найден.');
@@ -84,7 +84,7 @@ module.exports.updateUser = (req, res) => {
 
 module.exports.updateAvatarUser = (req, res) => {
   if(!req.body.avatar) {
-    throw res.status(400).send('Переданы некорректные данные при обновлении аватара.');
+    throw res.status(400).send({message: 'Переданы некорректные данные при обновлении аватара.'});
   }
   const { avatar } = req.body;
   const notFoundError = new NotFoundError('Пользователь с указанным _id не найден.');
