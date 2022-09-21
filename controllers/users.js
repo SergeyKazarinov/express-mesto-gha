@@ -1,64 +1,42 @@
 const Users = require('../models/user');
-const {ValidationErrors, NotFoundError} = require('../errors/Errors');
+const {NotFoundError} = require('../errors/Errors');
 
 module.exports.getUsers = (req, res) => {
-  const validationError = new ValidationErrors('Переданы некорректные данные при создании пользователя.');
   Users.find({})
     .then(user => res.send(user))
-    .catch((err) => {
-      let status = 500;
-      let message = 'Произошла ошибка';
-      switch(err.name) {
-      case validationError.name:
-        status = validationError.statusCode;
-        message = validationError.message;
-        break;
-      }
-      res.status(status).send(message);
-    });
+    .catch(() => res.status(500).send({message: 'Произошла ошибка'}));
 };
 
 module.exports.getUserById = (req, res) => {
-  const notFoundError = new NotFoundError('Пользователь по указанному _id не найден.');
-  Users.findById(req.params.id).orFail(notFoundError)
+  Users.findById(req.params.id).orFail(new NotFoundError())
   .then(user => res.send(user))
   .catch((err) => {
-    let status = 500;
-    let message = 'Произошла ошибка';
-    switch(err.name) {
-    case notFoundError.name:
-      status = notFoundError.statusCode;
-      message = notFoundError.message;
-      break;
+    console.log(`Ошибка: ${err.name}`);
+    if(err.name === 'NotFound') {
+      res.status(404).send({message: 'Пользователь с указанным id не найден.'});
+    } else if(err.name === 'CastError') {
+      res.status(400).send({message: 'Введены не корректные данные'});
+    } else {
+      res.status(500).send({message: 'Произошла ошибка'});
     }
-    res.status(status).send({message});
   });
 };
 
 module.exports.createUser = (req, res) => {
-  const validationError = new ValidationErrors('Переданы некорректные данные при создании пользователя.');
   const data = req.body;
   Users.create(data)
     .then(user => res.send({data: user}))
     .catch((err) => {
-      let status = 500;
-      let message = 'Произошла ошибка';
-      switch(err.name) {
-      case validationError.name:
-        status = validationError.statusCode;
-        message = validationError.message;
-        break;
+      if(err.name === 'ValidationError') {
+        res.status(400).send({message: 'Переданы не корректные данные'});
+      } else {
+        res.status(500).send({message: 'Произошла ошибка'});
       }
-      res.status(status).send({message});
     });
 };
 
 module.exports.updateUser = (req, res) => {
-  if(!(req.body.name && req.body.about)) {
-    throw res.status(400).send({message: 'Переданы некорректные данные при обновлении профиля'});
-  }
   const {name, about} = req.body;
-  const notFoundError = new NotFoundError('Пользователь с указанным _id не найден.');
   Users.findByIdAndUpdate(
     req.user._id,
     {name, about},
@@ -67,27 +45,21 @@ module.exports.updateUser = (req, res) => {
     runValidators: true,
     upsert: false
     }
-  ).orFail(notFoundError)
+  ).orFail(new NotFoundError())
   .then(user => res.send(user))
   .catch((err) => {
-    let status = 500;
-    let message = 'Произошла ошибка';
-    switch(err.name) {
-    case notFoundError.name:
-      status = notFoundError.statusCode;
-      message = notFoundError.message;
-      break;
+    if(err.name === 'ValidationError') {
+      res.status(400).send({message: 'Введены не корректные данные'});
+    } else if (err.name === 'CastError') {
+      res.status(404).send({message: 'Пользователь с указанным id не найден'});
+    } else {
+      res.status(500).send({message: 'Произошла ошибка'});
     }
-    res.status(status).send({message});
   });
 };
 
 module.exports.updateAvatarUser = (req, res) => {
-  if(!req.body.avatar) {
-    throw res.status(400).send({message: 'Переданы некорректные данные при обновлении аватара.'});
-  }
   const { avatar } = req.body;
-  const notFoundError = new NotFoundError('Пользователь с указанным _id не найден.');
 
   Users.findByIdAndUpdate(
     req.user._id,
@@ -96,18 +68,15 @@ module.exports.updateAvatarUser = (req, res) => {
     new: true,
     runValidators: true
     }
-  ).orFail(notFoundError)
+  ).orFail(new NotFoundError())
   .then(user => res.send(user))
   .catch((err) => {
-    console.dir(err);
-    let status = 500;
-    let message = 'Произошла ошибка';
-    switch(err.name) {
-    case notFoundError.name:
-      status = notFoundError.statusCode;
-      message = notFoundError.message;
-      break;
+    if(err.name === 'ValidationError') {
+      res.status(400).send({message: 'Введены не корректные данные'});
+    } else if (err.name === 'CastError') {
+      res.status(404).send({message: 'Пользователь с указанным id не найден'});
+    } else {
+      res.status(500).send({message: 'Произошла ошибка'});
     }
-    res.status(status).send({message});
   });
 };
