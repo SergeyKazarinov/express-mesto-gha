@@ -6,7 +6,6 @@ const userRouter = require('./routes/users');
 const cardRouter = require('./routes/cards');
 const { notFoundController } = require('./errors/notFoundController');
 
-
 const { PORT = 3000 } = process.env;
 
 const app = express();
@@ -19,7 +18,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use((req, res, next) => {
   req.user = {
-    _id: '6326ce1a7703c391bd86530f'
+    _id: '6326ce1a7703c391bd86530f',
   };
 
   next();
@@ -29,8 +28,6 @@ app.use('/', userRouter);
 app.use('/', cardRouter);
 
 app.use('*', notFoundController);
-
-
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
