@@ -1,3 +1,5 @@
+const bcrypt = require('bcryptjs');
+const validator = require('validator');
 const Users = require('../models/user');
 const { NotFoundError } = require('../errors/Errors');
 const {
@@ -29,16 +31,25 @@ module.exports.getUserById = (req, res) => {
 };
 
 module.exports.createUser = (req, res) => {
-  const data = req.body;
-  Users.create(data)
-    .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(INCORRECT_DATA_CODE).send({ message: INCORRECT_DATA_CODE_MESSAGE });
-      } else {
-        res.status(SERVER_ERROR_CODE).send({ message: SERVER_ERROR_MESSAGE });
-      }
-    });
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+  if (validator.isEmail(email)) {
+    bcrypt.hash(password, 10)
+      .then((hash) => Users.create({
+        name, about, avatar, email, password: hash,
+      }))
+      .then((user) => res.send(user))
+      .catch((err) => {
+        if (err.name === 'ValidationError') {
+          res.status(INCORRECT_DATA_CODE).send({ message: INCORRECT_DATA_CODE_MESSAGE });
+        } else {
+          res.status(SERVER_ERROR_CODE).send({ message: SERVER_ERROR_MESSAGE });
+        }
+      });
+  } else {
+    res.status(INCORRECT_DATA_CODE).send({ message: INCORRECT_DATA_CODE_MESSAGE });
+  }
 };
 
 module.exports.updateUser = (req, res) => {
