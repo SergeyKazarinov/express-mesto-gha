@@ -29,8 +29,17 @@ module.exports.createCard = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
-  Cards.findByIdAndRemove(req.params.cardId).orFail(new NotFoundError())
-    .then((cards) => res.send(cards))
+  Cards.findById(req.params.cardId).orFail(new NotFoundError())
+    .then((card) => {
+      const user = String(req.user._id);
+      const cardOwner = String(card.owner);
+      if (user === cardOwner) {
+        Cards.findByIdAndRemove(req.params.cardId)
+          .then((deletedCard) => res.send(deletedCard));
+      } else {
+        res.status(401).send({ message: 'У вас нет прав на удаление' });
+      }
+    })
     .catch((err) => {
       if (err.name === 'NotFound') {
         res.status(NOT_FOUND_CODE).send({ message: 'Карточка с указанным _id не найдена.' });
