@@ -6,9 +6,11 @@ const NotFoundError = require('../errors/NotFoundError');
 const {
   INCORRECT_DATA_MESSAGE,
   NOT_FOUND_USER_ID_MESSAGE,
+  EXIST_EMAIL_MESSAGE,
 } = require('../utils/constants');
 const NotFoundUserId = require('../errors/NotFoundUserId');
 const IncorrectData = require('../errors/IncorrectData');
+const ExistEmailError = require('../errors/ExistEmailError');
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
@@ -65,6 +67,14 @@ module.exports.createUser = (req, res, next) => {
     name, about, avatar, email, password,
   } = req.body;
   if (validator.isEmail(email)) {
+    Users.find({ email })
+      .then((user) => {
+        if (user.length > 0) {
+          throw new ExistEmailError(EXIST_EMAIL_MESSAGE);
+        }
+      })
+      .catch(next);
+
     bcrypt.hash(password, 10)
       .then((hash) => Users.create({
         name, about, avatar, email, password: hash,
