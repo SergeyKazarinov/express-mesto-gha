@@ -5,6 +5,7 @@ const cors = require('cors');
 const userRouter = require('./routes/users');
 const cardRouter = require('./routes/cards');
 const { notFoundController } = require('./errors/notFoundController');
+const { login } = require('./controllers/users');
 
 const { PORT = 3000 } = process.env;
 
@@ -26,6 +27,7 @@ app.use((req, res, next) => {
 
 app.use('/', userRouter);
 app.use('/', cardRouter);
+app.post('/signin', login);
 
 app.use('*', notFoundController);
 

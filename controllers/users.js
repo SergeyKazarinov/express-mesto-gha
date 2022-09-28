@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const validator = require('validator');
+const jwt = require('jsonwebtoken');
 const Users = require('../models/user');
 const { NotFoundError } = require('../errors/Errors');
 const {
@@ -9,6 +10,23 @@ const {
   INCORRECT_DATA_CODE_MESSAGE,
   NOT_FOUND_CODE,
 } = require('../utils/constants');
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+
+  Users.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+      res.cookie('jwt', token, {
+        maxAge: 3600000,
+        httpOnly: true,
+      });
+      res.send({ token });
+    })
+    .catch((err) => {
+      res.status(401).send({ message: err.message });
+    });
+};
 
 module.exports.getUsers = (req, res) => {
   Users.find({})
