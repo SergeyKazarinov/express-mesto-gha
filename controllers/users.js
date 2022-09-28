@@ -48,6 +48,21 @@ module.exports.getUserById = (req, res) => {
     });
 };
 
+module.exports.getUserMe = (req, res) => {
+  const userId = req.user._id;
+  Users.findById(userId).orFail(new NotFoundError())
+    .then((user) => res.send(user))
+    .catch((err) => {
+      if (err.name === 'NotFound') {
+        res.status(NOT_FOUND_CODE).send({ message: 'Пользователь с указанным id не найден.' });
+      } else if (err.name === 'CastError') {
+        res.status(INCORRECT_DATA_CODE).send({ message: INCORRECT_DATA_CODE_MESSAGE });
+      } else {
+        res.status(SERVER_ERROR_CODE).send({ message: SERVER_ERROR_MESSAGE });
+      }
+    });
+};
+
 module.exports.createUser = (req, res) => {
   const {
     name, about, avatar, email, password,
