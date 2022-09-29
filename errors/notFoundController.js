@@ -1,5 +1,6 @@
-const { NOT_FOUND_CODE, NOT_FOUND_ROUTE_MESSAGE } = require('../utils/constants');
+const { NOT_FOUND_ROUTE_MESSAGE } = require('../utils/constants');
+const NotFoundError = require('./NotFoundError');
 
-module.exports.notFoundController = (req, res) => {
-  res.status(NOT_FOUND_CODE).send({ message: NOT_FOUND_ROUTE_MESSAGE });
+module.exports.notFoundController = (req, res, next) => {
+  next(new NotFoundError(NOT_FOUND_ROUTE_MESSAGE));
 };
