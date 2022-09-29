@@ -5,7 +5,7 @@ const loginUserValidation = celebrate({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
     avatar: Joi.string(),
-    email: Joi.string().required(),
+    email: Joi.string().required().email(),
     password: Joi.string().required(),
   }),
 });
@@ -15,14 +15,14 @@ const createUserValidation = celebrate({
     name: Joi.string().min(2).max(30).default('Жак-Ив Кусто'),
     about: Joi.string().min(2).max(30).default('Исследователь'),
     avatar: Joi.string().default('https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png'),
-    email: Joi.string().required(),
+    email: Joi.string().required().email(),
     password: Joi.string().required(),
   }),
 });
 
 const getUserByIdValidation = celebrate({
   params: Joi.object().keys({
-    id: Joi.string().length(24),
+    id: Joi.string(),
   }),
 });
 
@@ -48,7 +48,7 @@ const createCardValidation = celebrate({
 
 const searchCardIdValidation = celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().length(24),
+    cardId: Joi.string(),
   }),
 });
 

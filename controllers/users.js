@@ -14,17 +14,20 @@ const ExistEmailError = require('../errors/ExistEmailError');
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
-
-  Users.findUserByCredentials(email, password)
-    .then((user) => {
-      const token = jwt.sign({ _id: user._id }, 'jwt-token', { expiresIn: '7d' });
-      res.cookie('jwt', token, {
-        maxAge: 3600000,
-        httpOnly: true,
-      });
-      res.send({ token });
-    })
-    .catch(next);
+  if (validator.isEmail(email)) {
+    Users.findUserByCredentials(email, password)
+      .then((user) => {
+        const token = jwt.sign({ _id: user._id }, 'jwt-token', { expiresIn: '7d' });
+        res.cookie('jwt', token, {
+          maxAge: 3600000,
+          httpOnly: true,
+        });
+        res.send({ token });
+      })
+      .catch(next);
+  } else {
+    next(new IncorrectData(INCORRECT_DATA_MESSAGE));
+  }
 };
 
 module.exports.getUsers = (req, res, next) => {
@@ -50,7 +53,7 @@ module.exports.getUserById = (req, res, next) => {
 module.exports.getUserMe = (req, res, next) => {
   const userId = req.user._id;
   Users.findById(userId).orFail(new NotFoundUserId(NOT_FOUND_USER_ID_MESSAGE))
-    .then((user) => res.send(user))
+    .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.name === 'NotFoundUserId') {
         next(err);
@@ -79,7 +82,9 @@ module.exports.createUser = (req, res, next) => {
       .then((hash) => Users.create({
         name, about, avatar, email, password: hash,
       }))
-      .then((user) => res.send(user))
+      .then((user) => res.send({
+        name, about, avatar, email, _id: user._id,
+      }))
       .catch((err) => {
         if (err.name === 'ValidationError') {
           next(new IncorrectData(INCORRECT_DATA_MESSAGE));
