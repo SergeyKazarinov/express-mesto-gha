@@ -1,4 +1,14 @@
 const { celebrate, Joi } = require('celebrate');
+const validator = require('validator');
+const IncorrectData = require('../errors/IncorrectData');
+
+const validationURL = (value) => {
+  if (!validator.isUrl((value), { require_protocol: true })) {
+    throw new IncorrectData('Невалидный URL-адресс');
+  } else {
+    return value;
+  }
+};
 
 const loginUserValidation = celebrate({
   body: Joi.object().keys({
@@ -22,7 +32,7 @@ const createUserValidation = celebrate({
 
 const getUserByIdValidation = celebrate({
   params: Joi.object().keys({
-    id: Joi.string().length(24),
+    id: Joi.string().alphanum().length(24),
   }),
 });
 
@@ -35,20 +45,20 @@ const updateUserValidation = celebrate({
 
 const updateAvatarUserValidation = celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string(),
+    avatar: Joi.string().custom(validationURL),
   }),
 });
 
 const createCardValidation = celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30).required(),
-    link: Joi.string().required(),
+    link: Joi.string().required().custom(validationURL),
   }),
 });
 
 const searchCardIdValidation = celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().length(24),
+    cardId: Joi.string().alphanum().length(24),
   }),
 });
 

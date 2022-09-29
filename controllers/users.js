@@ -3,14 +3,13 @@ const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const Users = require('../models/user');
 const NotFoundError = require('../errors/NotFoundError');
+const IncorrectData = require('../errors/IncorrectData');
+const ExistEmailError = require('../errors/ExistEmailError');
 const {
   INCORRECT_DATA_MESSAGE,
   NOT_FOUND_USER_ID_MESSAGE,
   EXIST_EMAIL_MESSAGE,
 } = require('../utils/constants');
-const NotFoundUserId = require('../errors/NotFoundUserId');
-const IncorrectData = require('../errors/IncorrectData');
-const ExistEmailError = require('../errors/ExistEmailError');
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
@@ -37,10 +36,10 @@ module.exports.getUsers = (req, res, next) => {
 };
 
 module.exports.getUserById = (req, res, next) => {
-  Users.findById(req.params.id).orFail(new NotFoundUserId(NOT_FOUND_USER_ID_MESSAGE))
+  Users.findById(req.params.id).orFail(new NotFoundError(NOT_FOUND_USER_ID_MESSAGE))
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'NotFoundUserId') {
+      if (err.name === 'NotFound') {
         next(err);
       } else if (err.name === 'CastError') {
         next(new IncorrectData(INCORRECT_DATA_MESSAGE));
@@ -52,10 +51,10 @@ module.exports.getUserById = (req, res, next) => {
 
 module.exports.getUserMe = (req, res, next) => {
   const userId = req.user._id;
-  Users.findById(userId).orFail(new NotFoundUserId(NOT_FOUND_USER_ID_MESSAGE))
+  Users.findById(userId).orFail(new NotFoundError(NOT_FOUND_USER_ID_MESSAGE))
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'NotFoundUserId') {
+      if (err.name === 'NotFound') {
         next(err);
       } else if (err.name === 'CastError') {
         next(new IncorrectData(INCORRECT_DATA_MESSAGE));
@@ -107,13 +106,13 @@ module.exports.updateUser = (req, res, next) => {
       runValidators: true,
       upsert: false,
     },
-  ).orFail(new NotFoundError())
+  ).orFail(new NotFoundError(NOT_FOUND_USER_ID_MESSAGE))
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new IncorrectData(INCORRECT_DATA_MESSAGE));
       } else if (err.name === 'CastError') {
-        next(new NotFoundUserId(NOT_FOUND_USER_ID_MESSAGE));
+        next(err);
       } else {
         next(err);
       }
@@ -130,13 +129,13 @@ module.exports.updateAvatarUser = (req, res, next) => {
       new: true,
       runValidators: true,
     },
-  ).orFail(new NotFoundError())
+  ).orFail(new NotFoundError(NOT_FOUND_USER_ID_MESSAGE))
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new IncorrectData(INCORRECT_DATA_MESSAGE));
       } else if (err.name === 'CastError') {
-        next(new NotFoundUserId(NOT_FOUND_USER_ID_MESSAGE));
+        next(err);
       } else {
         next(err);
       }

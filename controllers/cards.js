@@ -5,8 +5,8 @@ const {
   NOT_FOUND_CARD_ID_MESSAGE,
   NOT_RIGHTS_MESSAGE,
 } = require('../utils/constants');
-const NotFoundCardId = require('../errors/NotFoundCardId');
 const NotRightError = require('../errors/NotRightError');
+const NotFoundError = require('../errors/NotFoundError');
 
 module.exports.getCards = (req, res, next) => {
   Cards.find({})
@@ -29,7 +29,7 @@ module.exports.createCard = (req, res, next) => {
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  Cards.findById(req.params.cardId).orFail(new NotFoundCardId(NOT_FOUND_CARD_ID_MESSAGE))
+  Cards.findById(req.params.cardId).orFail(new NotFoundError(NOT_FOUND_CARD_ID_MESSAGE))
     .then((card) => {
       const user = String(req.user._id);
       const cardOwner = String(card.owner);
@@ -51,7 +51,7 @@ module.exports.deleteCard = (req, res, next) => {
       }
     })
     .catch((err) => {
-      if (err.name === 'NotFoundCardId') {
+      if (err.name === 'NotFound') {
         next(err);
       } else if (err.name === 'CastError') {
         next(new IncorrectData(INCORRECT_DATA_MESSAGE));
@@ -66,10 +66,10 @@ module.exports.likeCard = (req, res, next) => {
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
     { new: true },
-  ).orFail(new NotFoundCardId(NOT_FOUND_CARD_ID_MESSAGE))
+  ).orFail(new NotFoundError(NOT_FOUND_CARD_ID_MESSAGE))
     .then((cards) => res.send(cards))
     .catch((err) => {
-      if (err.name === 'NotFoundCardId') {
+      if (err.name === 'NotFound') {
         next(err);
       } else if (err.name === 'CastError') {
         next(new IncorrectData(INCORRECT_DATA_MESSAGE));
@@ -84,10 +84,10 @@ module.exports.dislikeCard = (req, res, next) => {
     req.params.cardId,
     { $pull: { likes: req.user._id } },
     { new: true },
-  ).orFail(new NotFoundCardId(NOT_FOUND_CARD_ID_MESSAGE))
+  ).orFail(new NotFoundError(NOT_FOUND_CARD_ID_MESSAGE))
     .then((cards) => res.send(cards))
     .catch((err) => {
-      if (err.name === 'NotFoundCardId') {
+      if (err.name === 'NotFound') {
         next(err);
       } else if (err.name === 'CastError') {
         next(new IncorrectData(INCORRECT_DATA_MESSAGE));

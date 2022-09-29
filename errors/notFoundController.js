@@ -1,6 +1,6 @@
 const { NOT_FOUND_ROUTE_MESSAGE } = require('../utils/constants');
-const NotFoundRouteError = require('./NotFoundRouteError');
+const NotFoundError = require('./NotFoundError');
 
 module.exports.notFoundController = (req, res, next) => {
-  next(new NotFoundRouteError(NOT_FOUND_ROUTE_MESSAGE));
+  next(new NotFoundError(NOT_FOUND_ROUTE_MESSAGE));
 };

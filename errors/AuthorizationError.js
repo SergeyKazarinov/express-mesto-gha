@@ -1,4 +1,4 @@
-class LoginError extends Error {
+class AuthorizationError extends Error {
   constructor(message) {
     super(message);
     this.name = 'LoginError';
@@ -6,4 +6,4 @@ class LoginError extends Error {
   }
 }
 
-module.exports = LoginError;
+module.exports = AuthorizationError;
