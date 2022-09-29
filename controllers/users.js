@@ -53,7 +53,7 @@ module.exports.getUserById = (req, res, next) => {
 module.exports.getUserMe = (req, res, next) => {
   const userId = req.user._id;
   Users.findById(userId).orFail(new NotFoundUserId(NOT_FOUND_USER_ID_MESSAGE))
-    .then((user) => res.status(200).send(user))
+    .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'NotFoundUserId') {
         next(err);
