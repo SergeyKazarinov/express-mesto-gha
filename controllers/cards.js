@@ -35,17 +35,7 @@ module.exports.deleteCard = (req, res, next) => {
       const cardOwner = String(card.owner);
       if (user === cardOwner) {
         Cards.findByIdAndRemove(req.params.cardId)
-          .then((deletedCard) => {
-            Cards.find({ _id: deletedCard._id })
-              .then((cards) => {
-                console.log(cards);
-                if (!cards.length > 0) {
-                  res.send(deletedCard);
-                } else {
-                  throw new Error();
-                }
-              });
-          });
+          .then((deletedCard) => res.send(deletedCard));
       } else {
         next(new NotRightError(NOT_RIGHTS_MESSAGE));
       }

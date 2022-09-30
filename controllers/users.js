@@ -1,5 +1,4 @@
 const bcrypt = require('bcryptjs');
-const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const Users = require('../models/user');
 const NotFoundError = require('../errors/NotFoundError');
@@ -13,20 +12,16 @@ const {
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
-  if (validator.isEmail(email)) {
-    Users.findUserByCredentials(email, password)
-      .then((user) => {
-        const token = jwt.sign({ _id: user._id }, 'jwt-token', { expiresIn: '7d' });
-        res.cookie('jwt', token, {
-          maxAge: 3600000,
-          httpOnly: true,
-        });
-        res.send({ token });
-      })
-      .catch(next);
-  } else {
-    next(new IncorrectData(INCORRECT_DATA_MESSAGE));
-  }
+  Users.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, 'jwt-token', { expiresIn: '7d' });
+      res.cookie('jwt', token, {
+        maxAge: 3600000,
+        httpOnly: true,
+      });
+      res.send({ token });
+    })
+    .catch(next);
 };
 
 module.exports.getUsers = (req, res, next) => {
@@ -68,32 +63,22 @@ module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-  if (validator.isEmail(email)) {
-    Users.find({ email })
-      .then((user) => {
-        if (user.length > 0) {
-          throw new ExistEmailError(EXIST_EMAIL_MESSAGE);
-        }
-      })
-      .catch(next);
-
-    bcrypt.hash(password, 10)
-      .then((hash) => Users.create({
-        name, about, avatar, email, password: hash,
-      }))
-      .then((user) => res.send({
-        name, about, avatar, email, _id: user._id,
-      }))
-      .catch((err) => {
-        if (err.name === 'ValidationError') {
-          next(new IncorrectData(INCORRECT_DATA_MESSAGE));
-        } else {
-          next(err);
-        }
-      });
-  } else {
-    next(new IncorrectData(INCORRECT_DATA_MESSAGE));
-  }
+  bcrypt.hash(password, 10)
+    .then((hash) => Users.create({
+      name, about, avatar, email, password: hash,
+    }))
+    .then((user) => res.status(201).send({
+      name, about, avatar, email, _id: user._id,
+    }))
+    .catch((err) => {
+      if (err.code === 11000) {
+        next(new ExistEmailError(EXIST_EMAIL_MESSAGE));
+      } else if (err.name === 'ValidationError') {
+        next(new IncorrectData(INCORRECT_DATA_MESSAGE));
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.updateUser = (req, res, next) => {
@@ -112,7 +97,7 @@ module.exports.updateUser = (req, res, next) => {
       if (err.name === 'ValidationError') {
         next(new IncorrectData(INCORRECT_DATA_MESSAGE));
       } else if (err.name === 'CastError') {
-        next(err);
+        next(new IncorrectData(NOT_FOUND_USER_ID_MESSAGE));
       } else {
         next(err);
       }
@@ -135,7 +120,7 @@ module.exports.updateAvatarUser = (req, res, next) => {
       if (err.name === 'ValidationError') {
         next(new IncorrectData(INCORRECT_DATA_MESSAGE));
       } else if (err.name === 'CastError') {
-        next(err);
+        next(new IncorrectData(NOT_FOUND_USER_ID_MESSAGE));
       } else {
         next(err);
       }
